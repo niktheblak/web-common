@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 )
 
+// StaticAuthenticator accepts a list of predetermined access tokens.
 type StaticAuthenticator struct {
 	AllowedTokens []string
 }

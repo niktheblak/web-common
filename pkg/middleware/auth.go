@@ -7,6 +7,7 @@ import (
 	"github.com/niktheblak/web-common/pkg/auth"
 )
 
+// Authenticator returns a HTTP handler that checks the request's Authorization header and proceeds or rejects the request.
 func Authenticator(handler http.Handler, authenticator auth.Authenticator) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
