@@ -16,13 +16,13 @@ type Server interface {
 	Shutdown(ctx context.Context) error
 }
 
-type Graceful struct {
+type Shutdown struct {
 	Server          Server
 	ShutdownTimeout time.Duration
 	Signals         []os.Signal
 }
 
-func (g *Graceful) Serve(ctx context.Context) error {
+func (g *Shutdown) Serve(ctx context.Context) error {
 	if g.Server == nil {
 		return fmt.Errorf("server cannot be nil")
 	}

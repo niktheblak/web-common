@@ -37,7 +37,7 @@ func TestServe(t *testing.T) {
 			fmt.Fprintln(w, "Test server")
 		})),
 	}
-	g := Graceful{
+	g := Shutdown{
 		Server:          server,
 		ShutdownTimeout: 1 * time.Second,
 		Signals:         []os.Signal{syscall.SIGUSR1},
