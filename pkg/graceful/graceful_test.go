@@ -34,7 +34,9 @@ func (s *testServer) Shutdown(ctx context.Context) error {
 func TestServe(t *testing.T) {
 	server := &testServer{
 		server: httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "Test server")
+			if _, err := fmt.Fprintln(w, "Test server"); err != nil {
+				t.Fatal(err)
+			}
 		})),
 	}
 	g := Shutdown{

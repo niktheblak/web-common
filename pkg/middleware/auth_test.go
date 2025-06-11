@@ -15,7 +15,9 @@ func TestAuthenticator(t *testing.T) {
 	t.Parallel()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "OK")
+		if _, err := fmt.Fprint(w, "OK"); err != nil {
+			t.Fatal(err)
+		}
 	})
 	t.Run("Unauthenticated", func(t *testing.T) {
 		t.Parallel()
