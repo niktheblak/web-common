@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAlwaysAllowAuthenticator_Authenticate(t *testing.T) {
+func TestAlwaysAllowAuthenticatorAuthenticate(t *testing.T) {
 	t.Parallel()
 
 	a := AlwaysAllow()

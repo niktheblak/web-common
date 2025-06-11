@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStaticAuthenticator_Authenticate(t *testing.T) {
+func TestStaticAuthenticatorAuthenticate(t *testing.T) {
 	t.Parallel()
 
 	a := Static("test_tkn_f12321")
