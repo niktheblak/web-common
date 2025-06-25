@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -12,16 +13,20 @@ func Encode(w http.ResponseWriter, v any) error {
 }
 
 // Decode a JSON HTTP body into a map.
-func Decode(r *http.Request) (map[string]any, error) {
+func Decode(r *http.Request) (body map[string]any, err error) {
+	body = make(map[string]any)
 	if r == nil {
-		return map[string]any{}, nil
+		return
 	}
 	if r.Body == nil {
-		return map[string]any{}, nil
+		return
 	}
-	defer r.Body.Close()
+	defer func() {
+		if closeErr := r.Body.Close(); closeErr != nil {
+			err = errors.Join(err, closeErr)
+		}
+	}()
 	dec := json.NewDecoder(r.Body)
-	m := make(map[string]any)
-	err := dec.Decode(&m)
-	return m, err
+	err = dec.Decode(&body)
+	return
 }
