@@ -47,9 +47,8 @@ func (g *Shutdown) Serve(ctx context.Context) error {
 		<-ctx.Done()
 		var shutdownCtx context.Context
 		if g.ShutdownTimeout > 0 {
-			shutdownCtx = context.Background()
 			var shutdownCancel context.CancelFunc
-			shutdownCtx, shutdownCancel = context.WithTimeout(ctx, g.ShutdownTimeout)
+			shutdownCtx, shutdownCancel = context.WithTimeout(context.Background(), g.ShutdownTimeout)
 			defer shutdownCancel()
 		} else {
 			shutdownCtx = ctx
