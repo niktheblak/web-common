@@ -26,32 +26,37 @@ func (g *Shutdown) Serve(ctx context.Context) error {
 	if g.Server == nil {
 		return fmt.Errorf("server cannot be nil")
 	}
-	errChan := make(chan error, 2)
-	var cancel context.CancelFunc = nil
 	if len(g.Signals) > 0 {
-		ctx, cancel = signal.NotifyContext(ctx, g.Signals...)
-		defer cancel()
+		var stop context.CancelFunc
+		ctx, stop = signal.NotifyContext(ctx, g.Signals...)
+		defer stop()
 	}
-	go func() {
-		if err := g.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errChan <- err
-			if cancel != nil {
-				cancel()
-			}
-		}
-	}()
+	// serveCtx is canceled by the caller's context, by one of the given signals or by the server
+	// itself no longer serving, whichever happens first.
+	serveCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	errChan := make(chan error, 2)
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		<-ctx.Done()
-		var shutdownCtx context.Context
+		// ListenAndServe returning at all means the server has stopped serving, so shut down
+		// even if it reported no error.
+		defer cancel()
+		if err := g.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errChan <- err
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		<-serveCtx.Done()
+		// The shutdown context must not be derived from serveCtx, which is always canceled by
+		// the time we get here; that would abort the shutdown before it could drain anything.
+		shutdownCtx := context.Background()
 		if g.ShutdownTimeout > 0 {
 			var shutdownCancel context.CancelFunc
-			shutdownCtx, shutdownCancel = context.WithTimeout(context.Background(), g.ShutdownTimeout)
+			shutdownCtx, shutdownCancel = context.WithTimeout(shutdownCtx, g.ShutdownTimeout)
 			defer shutdownCancel()
-		} else {
-			shutdownCtx = ctx
 		}
 		if err := g.Server.Shutdown(shutdownCtx); err != nil {
 			errChan <- err
